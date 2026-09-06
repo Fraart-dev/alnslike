@@ -8,6 +8,7 @@ Checks: '
   -modernize-use-trailing-return-type,
   -modernize-use-nodiscard,
   -modernize-pass-by-value,
+  -bugprone-easily-swappable-parameters,
   cppcoreguidelines-avoid-non-const-global-variables,
   cppcoreguidelines-pro-type-member-init
 '
@@ -18,10 +19,6 @@ CheckOptions:
   - key: readability-identifier-naming.ConstantIgnoredRegexp
     value: '.*'
 
-  - key: readability-identifier-naming.ConstexprVariableCase
-    value: CamelCase
-  - key: readability-identifier-naming.ConstexprVariablePrefix
-    value: k
   - key: readability-identifier-naming.ConstexprVariableCase
     value: CamelCase
   - key: readability-identifier-naming.ConstexprVariablePrefix
