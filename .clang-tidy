@@ -54,7 +54,7 @@ CheckOptions:
     value: CamelCase
   - key: readability-identifier-naming.UnionCase
     value: CamelCase
-  - key: readability-identifier-naming.ValueTemplateParameterCase
+  - key: readability-identifier-naming.CamelCase
     value: lower_case
   - key: readability-identifier-naming.VariableCase
     value: lower_case
@@ -62,7 +62,11 @@ CheckOptions:
   - key: readability-identifier-length.MinimumVariableNameLength
     value: '2'
   - key: readability-identifier-length.IgnoredVariableNames
-    value: 'i|j|k|x|y|z'
+    value: 'x|y|z|u|v'
+  - key: readability-identifier-length.IgnoredLoopCounterNames
+    value: 'i|j|k|x|y|z|u|v'
+  - key: readability-identifier-length.IgnoredParameterNames
+    value: 'k|x|y|z|u|v'
   - key: readability-identifier-length.MinimumParameterNameLength
     value: '2'
 
