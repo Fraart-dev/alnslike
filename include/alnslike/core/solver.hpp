@@ -57,7 +57,7 @@ public:
     Solver(const Solver&) = delete;
     Solver& operator=(const Solver&) = delete;
 
-    [[nodiscard]] SolverState Run() {
+    SolverState Run() {
         InitializeRun();
 
         while (ShouldContinue()) {
