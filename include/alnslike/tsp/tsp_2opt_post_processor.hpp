@@ -9,8 +9,7 @@
 #include <stdexcept>
 #include <cstdint>
 
-namespace metaheuristic::tsp {
-namespace core = alnslike::core;
+namespace alnslike::tsp {
 
 // Пост-процессор, выполняющий жадный 2-opt по кандидатным спискам ближайших соседей.
 // Работа ограничена заданным таймаутом.
@@ -167,4 +166,4 @@ SearchOutcome TryFullImprovement(
     std::chrono::steady_clock::time_point deadline_;
 };
 
-} // namespace metaheuristic::tsp
+} // namespace alnslike::tsp

@@ -1,14 +1,13 @@
 #pragma once
 #include <alnslike/core/types.hpp>
 #include <alnslike/tsp/coordinate.hpp>
-#include <alnslike/tsp/candidate_search.hpp>
+#include <alnslike/tsp/details/candidate_search.hpp>
 #include <vector>
 #include <span>
 #include <stdexcept>
 #include <algorithm>
 
-namespace metaheuristic::tsp {
-    namespace core = alnslike::core;
+namespace alnslike::tsp {
 
 class TspInstance {
 public:
@@ -96,4 +95,4 @@ private:
     }
 };
 
-} // namespace metaheuristic::tsp
+} // namespace alnslike::tsp

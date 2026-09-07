@@ -11,10 +11,8 @@
 #include <stdexcept>
 #include <vector>
 
-namespace metaheuristic::tsp {
+namespace alnslike::tsp {
     
-namespace core = alnslike::core;
-
 class NearestNeighborGenerator final : public core::SolutionGenerator, protected TspMutatorAccess {
 public:
     explicit NearestNeighborGenerator(const TspInstance* instance)
@@ -105,4 +103,4 @@ private:
     std::uniform_int_distribution<std::size_t> start_distribution_;
 };
 
-} // namespace metaheuristic::tsp
+} // namespace alnslike::tsp

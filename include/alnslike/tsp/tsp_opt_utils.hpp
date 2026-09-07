@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <utility>
 
-namespace metaheuristic::tsp {
+namespace alnslike::tsp {
 
 inline core::Cost EvaluateTwoOpt(
     const TspSolution& solution,
@@ -214,4 +214,4 @@ inline void ApplyThreeOpt(
     mutator.Cost() += move.delta;
 }
 
-} // namespace metaheuristic::tsp
+} // namespace alnslike::tsp

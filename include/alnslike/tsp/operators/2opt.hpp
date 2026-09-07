@@ -6,8 +6,7 @@
 #include <random>
 #include <string_view>
 
-namespace metaheuristic::tsp {
-namespace core = alnslike::core;
+namespace alnslike::tsp {
 
 class TwoOptOperatorBase : public core::LocalOperator, protected TspMutatorAccess {
 protected:
@@ -118,4 +117,4 @@ public:
     }
 };
 
-} // namespace metaheuristic::tsp
+} // namespace alnslike::tsp

@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <limits>
 
-namespace metaheuristic::tsp {
+namespace alnslike::tsp {
 
 using NodeId = std::uint32_t;
 inline constexpr NodeId kInvalidNode = std::numeric_limits<NodeId>::max();
@@ -25,4 +25,4 @@ struct Coordinate {
     }
 };
 
-} // namespace metaheuristic::tsp
+} // namespace alnslike::tsp

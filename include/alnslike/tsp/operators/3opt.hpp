@@ -10,8 +10,7 @@
 #include <string_view>
 #include <utility>
 
-namespace metaheuristic::tsp {
-namespace core = alnslike::core;
+namespace alnslike::tsp {
 
 class ThreeOptOperatorBase : public core::LocalOperator, protected TspMutatorAccess {
 protected:
@@ -175,4 +174,4 @@ using PureRandomThreeOptOperator     = GenericRandomThreeOptOperator<true>;
 using CandidateThreeOptOperator      = GenericCandidateThreeOptOperator<false>;
 using PureCandidateThreeOptOperator  = GenericCandidateThreeOptOperator<true>;
 
-} // namespace metaheuristic::tsp
+} // namespace alnslike::tsp

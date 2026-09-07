@@ -4,8 +4,7 @@
 #include <alnslike/tsp/tsp_instance.hpp>
 #include <vector>
 
-namespace metaheuristic::tsp {
-    namespace core = alnslike::core;
+namespace alnslike::tsp {
 
 class TspSolution final : public core::Solution {
 
