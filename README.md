@@ -34,7 +34,7 @@ target_link_libraries(my_target PRIVATE alnslike::alnslike)
 include(FetchContent)
 FetchContent_Declare(
     alnslike
-    GIT_REPOSITORY [https://github.com/Fraart-dev/alnslike.git](https://github.com/Fraart-dev/alnslike.git)
+    GIT_REPOSITORY https://github.com/Fraart-dev/alnslike.git
     GIT_TAG main
 )
 FetchContent_MakeAvailable(alnslike)
