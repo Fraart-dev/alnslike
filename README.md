@@ -50,7 +50,7 @@ g++ -std=c++20 -I/path/to/alnslike/include main.cpp -o main
 
 ### Минимальный пример
 
-Полный код примера находится в [`examples/minimal/main.cpp`](examples/minimal/main.cpp).
+
 
 Пример демонстрирует поиск минимума функции `x²` для целочисленного решения. Используются:
 
@@ -60,6 +60,86 @@ g++ -std=c++20 -I/path/to/alnslike/include main.cpp -o main
 - подключение готового критерия принятия `SimulatedAnnealingCriterion`;
 - сборка и запуск солвера через `SolverBuilder`.
 
+```cpp
+#include <alnslike/core/solver.hpp>
+#include <alnslike/core/local_step.hpp>
+#include <alnslike/builtin/criteria/simulated_annealing_criterion.hpp>
+#include <alnslike/builtin/selectors/classic_roulette_selector.hpp>
+
+#include <chrono>
+#include <iostream>
+#include <memory>
+#include <string_view>
+#include <vector>
+
+namespace core = alnslike::core;
+namespace builtin = alnslike::builtin;
+
+class IntSolution final : public core::Solution {
+public:
+    explicit IntSolution(int value) : value_(value) {}
+    core::Cost GetCost() const noexcept override { return value_ * value_; }
+    core::Cost GetFeasibilityViolation() const noexcept override { return 0.0; }
+    std::unique_ptr<Solution> Clone() const override { return std::make_unique<IntSolution>(value_); }
+    bool IsSolved() const noexcept override { return value_ == 0; }
+    void CopyFrom(const Solution& other) override { value_ = static_cast<const IntSolution&>(other).value_; }
+    int Value() const noexcept { return value_; }
+    void Shift(int delta) noexcept { value_ += delta; }
+private:
+    int value_;
+};
+
+class ShiftOperator final : public core::LocalOperator {
+public:
+    ShiftOperator(int delta, const char* name) : delta_(delta), name_(name) {}
+    std::string_view Name() const noexcept override { return name_; }
+    
+    core::SolutionDelta Propose(core::Solution& solution, core::Rng&) noexcept override {
+        const auto& sol = static_cast<const IntSolution&>(solution);
+        int current = sol.Value();
+        int proposed = current + delta_;
+        return {.objective_delta = static_cast<double>((proposed * proposed) - (current * current)), .feasibility_delta = 0.0};
+    }
+    
+    void Finalize(core::Solution& solution, bool is_accepted) noexcept override {
+        if (is_accepted) static_cast<IntSolution&>(solution).Shift(delta_);
+    }
+private:
+    int delta_;
+    const char* name_;
+};
+
+struct DummyMoveCache final : core::MoveCache { void Clear() noexcept override {} };
+
+int main() {
+    constexpr int kInitialValue = 1000;
+    constexpr std::size_t kMaxIterations = 10000;
+    constexpr auto kTimeout = std::chrono::seconds{1};
+    constexpr uint64_t kSeed = 33;
+
+    std::vector<std::unique_ptr<core::LocalOperator>> operators;
+    operators.push_back(std::make_unique<ShiftOperator>(1, "Increment operator"));
+    operators.push_back(std::make_unique<ShiftOperator>(-1, "Decrement operator"));
+
+    auto selector = std::make_unique<builtin::selectors::ClassicRouletteSelector>(operators.size());
+    auto step = std::make_unique<core::LocalSearchStep>(std::move(selector), std::move(operators));
+
+    using SACriterion = builtin::criteria::SimulatedAnnealingCriterion;
+    auto criterion = std::make_unique<SACriterion>(
+        SACriterion::Configuration{.initial_temperature = 1000.0, .cooling_rate = 0.999});
+
+    auto solver = core::SolverBuilder{}
+        .SetMaxIterations(kMaxIterations).SetTimeout(kTimeout).SetSeed(kSeed)
+        .SetInitialSolution(std::make_unique<IntSolution>(kInitialValue))
+        .SetSearchStep(std::move(step))
+        .SetAcceptanceCriterion(std::move(criterion))
+        .SetMoveCache(std::make_unique<DummyMoveCache>()).Build();
+
+    solver->Run();
+    std::cout << "Best value: " << static_cast<const IntSolution&>(solver->BestSolution()).Value() << "\n";
+}
+```
+
 ## Архитектура
 
 ООП-вариант библиотеки построен на абстрактных интерфейсах с виртуальными методами. Пользователь реализует свои классы, наследующие эти интерфейсы, и передаёт их в `SolverBuilder`.
@@ -68,7 +148,7 @@ g++ -std=c++20 -I/path/to/alnslike/include main.cpp -o main
 
 - **`Solution`** — состояние текущего решения. Обязательные методы: `GetCost()`, `GetFeasibilityViolation()`, `Clone()`, `CopyFrom()`. Опциональный `IsSolved()` позволяет остановить поиск досрочно.
 
-- **Операторы изменения:**
+- **Операторы:**
   - **`LocalOperator`** — оператор локального изменения решения: `Propose()` вычисляет дельту, `Finalize()` применяет или откатывает изменение в зависимости от флага `is_accepted`.
   - **`RuinOperator`** / **`RepairOperator`** — операторы разрушения и последующего восстановления. Метод `Undo()` откатывает изменения. Сохраняют общие данные в `MoveCache`.
 - **`SolutionGenerator`** (опционально) — генерирует начальное решение, если оно не задано явно.
@@ -117,7 +197,7 @@ g++ -std=c++20 -I/path/to/alnslike/include main.cpp -o main
 
 Все классы находятся в `alnslike::builtin::selectors` и реализуют `core::OperatorSelector`. Конструкторы принимают количество операторов.
 
-Большинство селекторов также используют структуру конфигурации, содержащую `RewardWeights` для настройки числовых наград: `rejected` (0), `accepted` (1), `improved_objective` (2), `improved_feasibility` (3), `new_best` (6).*
+Большинство селекторов также используют структуру конфигурации, содержащую `RewardWeights` для настройки числовых наград: `rejected` (0), `accepted` (1), `improved_objective` (2), `improved_feasibility` (3), `new_best` (6).
 
 | Селектор | Описание | Основные параметры |
 | :--- | :--- | :--- |
@@ -133,8 +213,8 @@ g++ -std=c++20 -I/path/to/alnslike/include main.cpp -o main
 
 - [ ] Модуль TSP
 - [ ] Реализовать Ruin & Repair операторы для TSP
-- [ ] Дописать тесты
-- [ ] Перейти от ООП-версии к статическому полиморфизму через концепты для устранения накладных расходов.
+- [ ] Покрытие тестами
+- [ ] Перейти от ООП-версии к концептам для устранения накладных расходов.
 
 ## Лицензия
 
