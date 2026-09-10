@@ -1,9 +1,7 @@
-#include <alnslike/core/solver.hpp>
-#include <alnslike/core/local_step.hpp>
-
 #include <alnslike/builtin/criteria/simulated_annealing_criterion.hpp>
 #include <alnslike/builtin/selectors/classic_roulette_selector.hpp>
-
+#include <alnslike/core/local_step.hpp>
+#include <alnslike/core/solver.hpp>
 #include <chrono>
 #include <iostream>
 #include <memory>
@@ -14,10 +12,6 @@ namespace {
 
 // Параметры задачи
 constexpr int kInitialValue = 1000;
-
-// Параметры операторов
-constexpr int kIncrementDelta = 1;
-constexpr int kDecrementDelta = -1;
 
 // Параметры солвера
 constexpr std::size_t kMaxIterations = 10000;
@@ -37,9 +31,9 @@ public:
     alnslike::core::Cost GetCost() const noexcept override { return value_ * value_; }
     alnslike::core::Cost GetFeasibilityViolation() const noexcept override { return 0.0; }
 
-    std::unique_ptr<Solution> Clone() const override {
-        return std::make_unique<IntSolution>(value_);
-    }
+    std::unique_ptr<Solution> Clone() const override { return std::make_unique<IntSolution>(value_); }
+
+    bool IsSolved() const noexcept override { return value_ == 0; }
 
     void CopyFrom(const Solution& other) override {
         const auto& other_int = static_cast<const IntSolution&>(other);
@@ -47,7 +41,8 @@ public:
     }
 
     int Value() const noexcept { return value_; }
-    void SetValue(int v) noexcept { value_ = v; }
+
+    void Shift(int delta) noexcept { value_ += delta; }
 
 private:
     int value_;
@@ -59,29 +54,26 @@ public:
 
     std::string_view Name() const noexcept override { return name_; }
 
-    alnslike::core::SolutionDelta Propose(
-        alnslike::core::Solution& solution,
-        alnslike::core::Rng& /*rng*/) noexcept override
-    {
-        auto& sol = static_cast<IntSolution&>(solution);
+    alnslike::core::SolutionDelta Propose(alnslike::core::Solution& solution,
+                                          alnslike::core::Rng& /*rng*/) noexcept override {
+        const auto& sol = static_cast<const IntSolution&>(solution);
 
-        proposed_ = sol.Value() + delta_;
-        return {
-            .objective_delta = static_cast<double>((proposed_ * proposed_) - (sol.Value() * sol.Value())),
-            .feasibility_delta = 0.0
-        };
+        int current = sol.Value();
+        int proposed = current + delta_;
+
+        return {.objective_delta = static_cast<double>((proposed * proposed) - (current * current)),
+                .feasibility_delta = 0.0};
     }
 
     void Finalize(alnslike::core::Solution& solution, bool is_accepted) noexcept override {
         if (is_accepted) {
-            static_cast<IntSolution&>(solution).SetValue(proposed_);
+            static_cast<IntSolution&>(solution).Shift(delta_);
         }
     }
 
 private:
     int delta_;
-    const char* name_;
-    int proposed_{};
+    std::string name_;
 };
 
 struct DummyMoveCache final : alnslike::core::MoveCache {
@@ -97,27 +89,24 @@ int main() {
 
     auto selector = std::make_unique<alnslike::builtin::selectors::ClassicRouletteSelector>(operators.size());
 
-    auto step = std::make_unique<alnslike::core::LocalSearchStep>(
-        std::move(selector), std::move(operators));
+    auto step = std::make_unique<alnslike::core::LocalSearchStep>(std::move(selector), std::move(operators));
 
-    alnslike::builtin::criteria::SimulatedAnnealingCriterion::Configuration sa_config;
-    sa_config.initial_temperature = kInitialTemperature;
-    sa_config.cooling_rate = kCoolingRate;
-    auto criterion = std::make_unique<alnslike::builtin::criteria::SimulatedAnnealingCriterion>(sa_config);
+    alnslike::builtin::criteria::SimulatedAnnealingCriterion::Configuration sa_config = {
+        .initial_temperature = kInitialTemperature, .cooling_rate = kCoolingRate};
+    auto sa_criterion = std::make_unique<alnslike::builtin::criteria::SimulatedAnnealingCriterion>(sa_config);
 
     auto solver = alnslike::core::SolverBuilder{}
-        .SetMaxIterations(kMaxIterations)
-        .SetTimeout(kTimeout)
-        .SetSeed(kSeed)
-        .SetInitialSolution(std::move(initial))
-        .SetSearchStep(std::move(step))
-        .SetAcceptanceCriterion(std::move(criterion))
-        .SetMoveCache(std::make_unique<DummyMoveCache>())
-        .Build();
+                      .SetMaxIterations(kMaxIterations)
+                      .SetTimeout(kTimeout)
+                      .SetSeed(kSeed)
+                      .SetInitialSolution(std::move(initial))
+                      .SetSearchStep(std::move(step))
+                      .SetAcceptanceCriterion(std::move(sa_criterion))
+                      .SetMoveCache(std::make_unique<DummyMoveCache>())
+                      .Build();
 
     solver->Run();
 
     const auto& best = solver->BestSolution();
-    std::cout << "Best value: "
-              << static_cast<const IntSolution&>(best).Value() << "\n";
+    std::cout << "Best value: " << static_cast<const IntSolution&>(best).Value() << "\n";
 }
