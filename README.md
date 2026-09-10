@@ -50,9 +50,7 @@ g++ -std=c++20 -I/path/to/alnslike/include main.cpp -o main
 
 ### Минимальный пример
 
-
-
-Пример демонстрирует поиск минимума функции `x²` для целочисленного решения. Используются:
+Поиск минимума функции `x²` для целочисленного решения. Используются:
 
 - реализация `IntSolution` — решение, хранящее целое число `x`, целевая функция `x²`;
 - реализация двух операторов `ShiftOperator`, изменяющих значение на `+1` или `-1`;
@@ -106,7 +104,7 @@ public:
     }
 private:
     int delta_;
-    const char* name_;
+    std::string name_;
 };
 
 struct DummyMoveCache final : core::MoveCache { void Clear() noexcept override {} };
