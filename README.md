@@ -11,8 +11,8 @@ Header-only фреймворк на C++20 для проектирования и
   - `LocalSearchStep` — локальный оператор с двухфазным применением (вычисление дельты и применение).
 - Критерии принятия: `SimulatedAnnealingCriterion` (стандартный и с возможностью разогрева), `GreatDelugeCriterion`, `LateAcceptanceCriterion`, `StepCountingCriterion`, `DiversifiedLateAcceptanceCriterion`, `GreedyAcceptanceCriterion`, `EpsilonGreedyCriterion`.
 - Селекторы операторов: `UniformRandomSelector`, `ClassicRouletteSelector`, `EpsilonGreedySelector`, `UcbSelector`, `DiscountedUcbSelector`, `ThompsonSamplingSelector`, `Exp3Selector`.
-- Реализация решения и операторов для задачи коммивояжёра (TSP).
 - Интерфейсы для реализации собственных `Solution`, операторов, критериев, селекторов, генераторов и постобработки.
+- Реализация решения и операторов для задачи коммивояжёра (TSP).
 
 ## Быстрый старт
 
@@ -210,9 +210,10 @@ int main() {
 ## Roadmap
 
 - [x] Модуль TSP
-- [ ] Реализовать Ruin & Repair операторы для TSP
+- [ ] Ruin & Repair операторы для TSP
 - [ ] Покрытие кода тестами
 - [ ] Перейти от ООП-версии к концептам для устранения накладных расходов.
+- [ ] Модули для других задач комбинаторной оптимизации.
 
 ## Лицензия
 
